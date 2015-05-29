@@ -7,10 +7,10 @@ version = "1.0.0"
 android {
     compileSdkVersion 22
     buildToolsVersion "22.0.1"
-    resourcePrefix "fuzzydatetime__"
+    resourcePrefix "android-common-libraries__"
 
     defaultConfig {
-        applicationId "com.milky.utils"
+        // applicationId "com.milky.utils"
         minSdkVersion 16
         targetSdkVersion 22
         versionCode 1
@@ -24,7 +24,87 @@ android {
     }
 }
 
+def siteUrl = 'https://github.com/huangcd/android-common-libraries'      // Homepage URL of the library
+def gitUrl = 'https://github.com/huangcd/android-common-libraries.git'   // Git repository URL
+group = "com.milky"
+
+install {
+    repositories.mavenInstaller {
+        // This generates POM.xml with proper parameters
+        pom {
+            project {
+                packaging 'aar'
+
+                // Add your description here
+                name 'Common libraries for Android develop'
+                url siteUrl
+
+                // Set your license
+                licenses {
+                    license {
+                        name 'The Apache Software License, Version 2.0'
+                        url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+                    }
+                }
+                developers {
+                    developer {
+                        id 'huangcd.thu'
+                        name 'Chongdi Huang'
+                        email 'huangcd.thu@gmail.com'
+                    }
+                }
+                scm {
+                    connection gitUrl
+                    developerConnection gitUrl
+                    url siteUrl
+                }
+            }
+        }
+    }
+}
+
+// Maven Group ID for the artifact
+
 dependencies {
     compile fileTree(dir: 'libs', include: ['*.jar'])
     compile 'com.android.support:appcompat-v7:22.1.1'
 }
+
+task sourcesJar(type: Jar) {
+    from android.sourceSets.main.java.srcDirs
+    classifier = 'sources'
+}
+
+task javadoc(type: Javadoc) {
+    source = android.sourceSets.main.java.srcDirs
+    classpath += project.files(android.getBootClasspath().join(File.pathSeparator))
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+artifacts {
+    archives javadocJar
+    archives sourcesJar
+}
+
+Properties properties = new Properties()
+properties.load(project.rootProject.file('local.properties').newDataInputStream())
+
+bintray {
+    user = properties.getProperty("bintray.user")
+    key = properties.getProperty("bintray.apikey")
+
+    configurations = ['archives']
+    pkg {
+        repo = "maven"
+        name = "android-common-libraries"
+        websiteUrl = siteUrl
+        vcsUrl = gitUrl
+        licenses = ["Apache-2.0"]
+        publish = true
+    }
+}
+
+
